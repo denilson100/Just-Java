@@ -1,11 +1,14 @@
 package br.com.mobile10.justjava;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
      * This method is called when the plus button is clicked.
      */
     public void increment(View view) {
+        if (quantity == 100) {
+            Toast.makeText(this, "You cannot have more than 100 coffees", Toast.LENGTH_LONG).show();
+            return;
+        }
         quantity = quantity + 1;
         displayQuantity(quantity);
     }
@@ -29,6 +36,10 @@ public class MainActivity extends AppCompatActivity {
      * This method is called when the minus button is clicked.
      */
     public void decrement(View view) {
+        if (quantity == 0) {
+            Toast.makeText(this, "You cannot have less than 1 coffees", Toast.LENGTH_LONG).show();
+            return;
+        }
         quantity = quantity - 1;
         displayQuantity(quantity);
     }
@@ -51,20 +62,45 @@ public class MainActivity extends AppCompatActivity {
         boolean hasChocolate = chocolateCheckBox.isChecked();
 
         // Calculate the price
-        int price = calculatePrice();
+        int price = calculatePrice(hasWhippedCream, hasChocolate);
+        String priceMessage = createOrderSummary(name, price, hasWhippedCream, hasChocolate);
+
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Just Java order " + name);
+        intent.putExtra(Intent.EXTRA_TEXT, priceMessage);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
 
         // Display the order summary on the screen
         String message = createOrderSummary(name, price, hasWhippedCream, hasChocolate);
-        displayMessage(message);
+        displayMessage(priceMessage);
     }
 
     /**
      * Calculates the price of the order.
      *
+     * @param addWheppedCream if add Whepped Cream
+     * @param addChocolate if add Chocolate
      * @return total price
      */
-    private int calculatePrice() {
-        return quantity * 5;
+    private int calculatePrice(boolean addWheppedCream, boolean addChocolate) {
+
+        int basePrice = 5;
+
+        // Add $1 the Cream
+        if (addWheppedCream){
+            basePrice = basePrice + 1;
+        }
+
+        // Add $2 the chocolate
+        if (addChocolate) {
+            basePrice = basePrice + 2;
+        }
+
+        // Calculate total order
+        return quantity * basePrice;
     }
 
     /**
