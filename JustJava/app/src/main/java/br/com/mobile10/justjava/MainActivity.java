@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void submitOrder(View view) {
 
-        // Text
+        // Text mmm
         EditText nameFiled = (EditText) findViewById(R.id.name_field);
         String name = nameFiled.getText().toString();
 
